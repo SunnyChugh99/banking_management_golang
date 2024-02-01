@@ -1,0 +1,52 @@
+ docker run --name postgres13 -p 5433:5433 -e POSTGRES_PASSWORD=secret -e POSTGRES_USER=root -d postgres:12-alpine
+
+
+Golang database migration
+
+migrate package in Golang
+
+ migrate create -ext sql -dir db/migration -seq init_schema
+
+
+
+sudo systemctl stop postgresql
+
+
+
+
+docker run --name postgres17 -p 5433:5432 -e POSTGRES_PASSWORD=secret -e POSTGRES_USER=root -d postgres:12-alpine
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Migration up:
+-------------------------------------------------------------------------------------------------------------------------------------------------
+migrate -path db/migration -database "postgres://root:secret@localhost:5433/simple_bank?sslmode=disable" -verbose up
+
+
+
+DATABASE/sql
+ - very fast and straightforward
+ - manual mapping SQL fields to variables
+ - Easy to make mistakes, not caught at runtime
+
+
+GORM
+ - CRUD operations already implemented, very short prod code
+ - must learn how to write complex queries using gorm's functions
+ - Run slowly on high traffic
+
+
+ SQLX 
+ - Quite fast & easy to use
+ - Field mapping via query text & struct tags
+ - Failure won't occur until runtime   
+
+ SQLC
+ - Very fast & easy to use
+ - Automatic code generation
+ - Catch SQL query errors before generating codes
+ - Full support postgres, mysql is experimental
+
+
+ TESTING FRAMEWORK
+
+ TESTIFY package

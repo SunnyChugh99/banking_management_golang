@@ -1,4 +1,4 @@
-module github.com/techschool/simplebank
+module github.com/SunnyChugh99/banking_management_golang
 
 go 1.20
 

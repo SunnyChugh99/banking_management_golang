@@ -30,6 +30,9 @@ func NewServer(config util.Config,store db.Store) (*Server, error){
 	fmt.Println(config.DBDriver)
 	fmt.Println(config.AccessTokenDuration)
 
+	fmt.Println("DB SOURCE")
+	fmt.Println(config.DBSource)
+
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil{
 		return nil, fmt.Errorf("cannot create token master: %w", err)

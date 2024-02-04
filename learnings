@@ -50,3 +50,7 @@ GORM
  TESTING FRAMEWORK
 
  TESTIFY package
+
+
+
+ docker run --name bankmanagement -p 080 -e DBSOURCE="postgres://root:secret@172.17.0.2:5432/simple_bank?sslmode=disable" sunnydocker1209/bank_management:v1

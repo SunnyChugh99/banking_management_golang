@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-
+source /app/app.env
 echo "DB SOURCE"
 echo $DBSOURCE
 echo "Run db migrations"

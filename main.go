@@ -23,7 +23,7 @@ func main(){
 
 
 
-	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	conn, err := sql.Open(config.DB_Driver, config.DBSource)
 	if err!=nil{
 		log.Fatal("Cannot connect to database")
 	}

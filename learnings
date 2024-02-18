@@ -54,3 +54,96 @@ GORM
 
 
  docker run --name bankmanagement -p 080 -e DBSOURCE="postgres://root:secret@172.17.0.2:5432/simple_bank?sslmode=disable" sunnydocker1209/bank_management:v1
+
+
+AWS password:
+
+RDS databae:
+
+user-  root 
+
+password - vOe5Go2oTKtBIFSE60I7
+host - simple-bank.cfaqkm6kysnc.eu-west-1.rds.amazonaws.com
+
+
+migrateup:
+
+migrate -path db/migration -database "postgres://root:vOe5Go2oTKtBIFSE60I7@simple-bank.cfaqkm6kysnc.eu-west-1.rds.amazonaws.com:5432/simple_bank" -verbose up
+
+
+TOKEN_SYMMETRIC_KEY d316cf2a654bc266c875c08212fcf8cc
+
+
+
+
+aws ssm code:
+
+// Use this code snippet in your app.
+// If you need more information about configurations or implementing the sample code, visit the AWS docs:   
+// https://aws.github.io/aws-sdk-go-v2/docs/getting-started/
+
+import (
+	"context"
+	"log"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+)
+
+func main() {
+	secretName := "simple_bank"
+	region := "eu-west-1"
+
+	config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create Secrets Manager client
+	svc := secretsmanager.NewFromConfig(config)
+
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId:     aws.String(secretName),
+		VersionStage: aws.String("AWSCURRENT"), // VersionStage defaults to AWSCURRENT if unspecified
+	}
+
+	result, err := svc.GetSecretValue(context.TODO(), input)
+	if err != nil {
+		// For a list of exceptions thrown, see
+		// https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+		log.Fatal(err.Error())
+	}
+
+	// Decrypts secret using the associated KMS key.
+	var secretString string = *result.SecretString
+
+	// Your code goes here.
+}
+
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+
+
+aws access_key_id - AKIAW3MECL3YPZUT6SGQ
+
+secret_key : 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
+
+
+SECRET ARN : arn:aws:secretsmanager:eu-west-1:471112769264:secret:simple_bank-V855WG
+
+
+aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text
+aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text
+
+
+10683796@ltilbom20401298:~/Desktop/EVERYTHING/Learnings/SKILLS_LEARNINGS/banking_management_golang$ aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' 
+DB_DRIVER=postgres
+DB_SOURCE=postgres://root:vOe5Go2oTKtBIFSE60I7@simple-bank.cfaqkm6kysnc.eu-west-1.rds.amazonaws.com:5432/simple_bank
+SERVER_ADDRESS=0.0.0.0:8080
+TOKEN_SYMMETRIC_KEY=d316cf2a654bc266c875c08212fcf8cc
+ACCESS_TOKEN_DURATION=15m
+10683796@ltilbom20401298:~/Desktop/EVERYTHING/Learnings/SKILLS_LEARNINGS/banking_management_golang$ aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > app.env

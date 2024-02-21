@@ -50,6 +50,8 @@ func (server *Server) createUser(ctx *gin.Context){
 	fmt.Println("here-2")
 
 	hashedPassword, err := util.HashPassword(req.Password)
+	fmt.Println("here-3")
+
 	if err!=nil{
 		ctx.JSON(http.StatusInternalServerError,  errorResponse(err))
 		return
@@ -61,8 +63,12 @@ func (server *Server) createUser(ctx *gin.Context){
 		Email: req.Email,
 	}
 
+	fmt.Println("here-4")
+
 	user, err := server.store.CreateUser(ctx, args)
 	if err!=nil{
+		fmt.Println("in error")
+
 		if pqErr,ok := err.(*pq.Error); ok{
 			switch pqErr.Code.Name(){
 			case "unique_violation":
@@ -74,6 +80,8 @@ func (server *Server) createUser(ctx *gin.Context){
 		ctx.JSON(http.StatusInternalServerError,  errorResponse(err))
 		return
 	}
+	fmt.Println("here-5")
+
 	userResponse := newUserResponse(user)
 	ctx.JSON(http.StatusOK, userResponse)
 

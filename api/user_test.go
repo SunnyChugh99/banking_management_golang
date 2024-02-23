@@ -232,3 +232,7 @@ func requiredBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User){
 	require.Equal(t, user.Email, gotUser.Email)
 	require.Empty(t, gotUser.HashedPassword)
 }
+
+
+
+// write test cases for login user 

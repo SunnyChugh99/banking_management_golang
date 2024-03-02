@@ -182,3 +182,17 @@ secret
 
 
 How to manage user sessions?
+
+
+
+---------------------------------------------------------------------------------------------
+GRPC
+---------------------------------------------------------------------------------------------
+
+With protocol buffers, you write a .proto description of the data structure you wish to store
+
+
+After all installations of protobuf and stuff
+
+
+Had to install this plugin also for running make proto command - - -  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest

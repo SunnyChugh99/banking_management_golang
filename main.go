@@ -1,17 +1,21 @@
 package main
 
 import (
+	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"net"
-	"strings"
+	"net/http"
+
+	_ "github.com/SunnyChugh99/banking_management_golang/doc/statik"
 
 	db "github.com/SunnyChugh99/banking_management_golang/db/sqlc"
 	"github.com/SunnyChugh99/banking_management_golang/gapi"
 	"github.com/SunnyChugh99/banking_management_golang/pb"
 	"github.com/SunnyChugh99/banking_management_golang/util"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
+	"github.com/rakyll/statik/fs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -28,6 +32,7 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
+	go runHTTPGatewayServer(config, store)
 	runGrpcServer(config, store)
 }
 
@@ -46,40 +51,56 @@ func runGrpcServer(config util.Config, store db.Store) {
 		log.Fatal("Cannot create listen", err)
 	}
 
-	// Get the hostname and port of the running gRPC server
-	host, port := extractHostnamePort(listener.Addr().String())
-	log.Printf("start grpc server at %s", listener.Addr().String())
-
-	// Get the list of registered services and their RPC methods
-	serviceInfo := grpcServer.GetServiceInfo()
-
-	// Print information about the running gRPC server
-	fmt.Printf("gRPC Server is running on: %s:%s\n", host, port)
-	fmt.Println("Registered Services:")
-	for serviceName, methodInfo := range serviceInfo {
-		fmt.Printf("- Service: %s\n", serviceName)
-		fmt.Println("  RPC Methods:")
-		for _, method := range methodInfo.Methods {
-			fmt.Printf("    - %s\n", method.Name)
-		}
-	}
+	log.Printf("Start grpc server at %s", listener.Addr().String())
 
 	err = grpcServer.Serve(listener)
 	if err != nil {
 		log.Fatal("Cannot start grpc server", err)
 	}
 }
-func extractHostnamePort(addr string) (string, string) {
-	if strings.HasPrefix(addr, "[") {
-		// IPv6 address format [host]:port
-		hostPort := strings.Split(addr, "]:")
-		host := strings.TrimPrefix(hostPort[0], "[")
-		port := hostPort[1]
-		return host, port
+
+
+func runHTTPGatewayServer(config util.Config, store db.Store) {
+	server, err := gapi.NewServer(config, store)
+	if err != nil {
+		log.Fatal("Cannot create server", err)
 	}
 
-	// IPv4 address format host:port
-	parts := strings.Split(addr, ":")
-	return parts[0], parts[1]
-}
+	// grpcServer := grpc.NewServer()
+	// pb.RegisterSimpleBankServer(grpcServer, server)
+	// reflection.Register(grpcServer)
 
+	gprcMutex := runtime.NewServeMux()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err = pb.RegisterSimpleBankHandlerServer(ctx, gprcMutex, server)
+	if err != nil {
+		log.Fatal("Cannot create handler", err)
+	}
+
+	Mux := http.NewServeMux()
+
+	Mux.Handle("/", gprcMutex)
+
+	statikFs, err := fs.New()
+	if err != nil {
+		log.Fatal("Cannot create statik fs", err)
+	}
+
+	swaggerHandler := http.StripPrefix("/swagger", http.FileServer(statikFs))
+	Mux.Handle("/swagger/", swaggerHandler)
+
+	
+	listener, err := net.Listen("tcp", config.HTTPServerAddress)
+	if err != nil {
+		log.Fatal("Cannot create listen", err)
+	}
+
+	log.Printf("Start HTTP server at %s", listener.Addr().String())
+
+	err = http.Serve(listener, Mux)
+	if err != nil {
+		log.Fatal("Cannot start HTTP server", err)
+	}
+}

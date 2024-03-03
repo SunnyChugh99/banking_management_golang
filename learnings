@@ -196,3 +196,120 @@ After all installations of protobuf and stuff
 
 
 Had to install this plugin also for running make proto command - - -  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+
+evans --host ltilbom20401298 --port 9090  -r true
+
+
+---------------------------------------------------------------------------------------------
+grpcurl
+---------------------------------------------------------------------------------------------
+10683796@ltilbom20401298:~/Desktop/EVERYTHING/Learnings/SKILLS_LEARNINGS/banking_management_golang$ grpcurl -plaintext -d '{"username": "ssssss", "password": "sasdvvddsds@Aaa", "full_name": "asasasasaa", "email": "sun@gmail.com"}' localhost:9090 pb.SimpleBank/CreateUser
+{
+  "user": {
+    "username": "ssssss",
+    "fullName": "asasasasaa",
+    "email": "sun@gmail.com",
+    "passwordChangedAt": "0001-01-01T00:00:00Z",
+    "createdAt": "2024-03-02T12:52:56.196645Z"
+  }
+}
+
+
+navigate to the main directory of project and run these commands to connect to grpc SERVER
+
+grpcurl -plaintext -d '{"username": "ssssss", "password": "sasdvvddsds@Aaa", "full_name": "asasasasaa", "email": "sun@gmail.com"}' localhost:9090 pb.SimpleBank/CreateUser
+
+
+grpcurl -plaintext -d '{"username": "ssssss", "password": "sasdvvddsds@Aaa"}' localhost:9090 pb.SimpleBank/LoginUser
+
+
+
+protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative --grpc-gateway_out=pb --grpc-gateway_opt paths=source_relative \
+    --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+    proto/*.proto
+
+
+GRPC
+
+---------------------------------------------------------------------------------------------
+Packages required - 
+---------------------------------------------------------------------------------------------
+1 - protoc (Protocol Buffers)
+2-  protoc-gen-go-grpc (plugin req)
+3 - protoc-gen-go  (plugin req)
+
+
+Commands for installation - 
+
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+
+make sure above plugin binaries are included in the go path
+
+
+---------------------------------------------------------------------------------------------
+Basic flow - 
+---------------------------------------------------------------------------------------------
+1 - write the proto files 
+---you write a .proto description of the data structure you wish to store
+
+
+
+2 - generate grpc code from the proto files writtend using the command ---
+protoc --proto_path=proto --go_out=pb --go-grpc_out=pb proto/calculator.proto
+
+3- Run the grpc server
+
+
+4- Run the grpc client
+
+
+
+grpcurl
+
+grpcurl -plaintext -d '{"username": "ssssss", "password": "sasdvvddsds@Aaa", "full_name": "asasasasaa", "email": "sun@gmail.com"}' localhost:9090 pb.SimpleBank/CreateUser
+
+
+grpcurl -plaintext -d '{"username": "ssssss", "password": "sasdvvddsds@Aaa"}' localhost:9090 pb.SimpleBank/LoginUser
+
+
+---------------------------------------------------------------------------------------------
+GRPC gateway
+---------------------------------------------------------------------------------------------
+
+gRPC Gateway is a tool that allows you to expose gRPC services as HTTP/JSON endpoints. gRPC (Remote Procedure Call) is a high-performance, open-source RPC framework developed by Google, primarily designed for communication between microservices. It uses Protocol Buffers (protobuf) as the interface definition language.
+
+While gRPC is highly efficient for communication between services within the same infrastructure, it might not be the best choice for client-server communication over the internet, especially if clients are web browsers or mobile devices that typically communicate over HTTP and expect JSON payloads.
+
+gRPC Gateway bridges this gap by automatically generating HTTP handlers that translate HTTP/JSON requests into gRPC calls. It allows clients to communicate with gRPC servers using HTTP/JSON, thus enabling interoperability between different types of clients and servers.
+
+In summary, gRPC Gateway provides a convenient way to expose gRPC services to clients that use HTTP/JSON as their communication protocol. This enables compatibility with existing web frameworks, mobile applications, and other HTTP-based clients.
+
+
+
+
+
+From a .proto file , protoc will convert it to both grpc and http gateway code
+
+GRPC client ==> will connect directly to grpc server to send grpc request and recieve binary responses.
+While http client ==> will connect to the http server to send http gateway req, ==> this will be translated to grpc format before sendig it to the grpc service handleer, it will also be translated back to json format before sending it back to the http gateway
+
+
+
+
+Steps for gateway implementation -
+
+1- add necessary packages in different package, run go mod tidy, go install.
+2 - Add the required proto files in our folder, add the syntax for adding http gateway in proto
+3 - in the protoc command add the necessary changes to produce the http gateway server interfaces.
+4 - in the main.go write the code to run the http gateway server, ==> grpcMutex-- register it to grpc server, httpMutex,   and conn between both of them
+5 - both servers should run at same time, test them using postmand and grpcurl
+
+6 - extract metadata ==> clientIp, user-agent for both http gateway and grpc client  ==> metadata (context) , peer(context)
+
+
+
+protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative --grpc-gateway_out=pb --grpc-gateway_opt paths=source_relative \
+    --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+    proto/*.proto

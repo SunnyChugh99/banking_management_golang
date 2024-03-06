@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -13,6 +14,9 @@ import (
 	"github.com/SunnyChugh99/banking_management_golang/gapi"
 	"github.com/SunnyChugh99/banking_management_golang/pb"
 	"github.com/SunnyChugh99/banking_management_golang/util"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
 	"github.com/rakyll/statik/fs"
@@ -21,6 +25,7 @@ import (
 )
 
 func main() {
+	fmt.Println("main file starts")
 	config, err := util.LoadConfig(".")
 	if err != nil {
 		log.Fatal("Cannot load config ", err)
@@ -31,9 +36,30 @@ func main() {
 		log.Fatal("Cannot connect to database")
 	}
 
+	fmt.Println("DB source in main file")
+	fmt.Println("DB source ", config.DBSource)
+
+
+	fmt.Println("Migration file in main file")
+	fmt.Println("MigrationURL  ", config.MigrationURL)
+
+	runDBMigrations(config.MigrationURL, config.DBSource)
+
 	store := db.NewStore(conn)
 	go runHTTPGatewayServer(config, store)
 	runGrpcServer(config, store)
+}
+
+func runDBMigrations(MigrationURL string, DBSource string) {
+	migration, err := migrate.New(MigrationURL, DBSource)
+	if err != nil{
+		log.Fatal("Cannot create migration instance: ", err)
+	}
+	if err:= migration.Up(); err!=nil && err!=migrate.ErrNoChange{
+		log.Fatal("Cannot run db migrations: ", err)
+	} 
+	log.Println("DB migrations ran successfully.")
+
 }
 
 func runGrpcServer(config util.Config, store db.Store) {

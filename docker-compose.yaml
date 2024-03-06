@@ -2,6 +2,8 @@ version: "3.9"
 services:
   postgres:
     image: postgres:12-alpine
+    ports:
+      - "5433:5432" 
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=secret
@@ -14,8 +16,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DBSOURCE=postgres://root:secret@postgres:5432/simple_bank?sslmode=disable
+      - DBSOURCE=postgres://root:secret@postgres:5433/simple_bank?sslmode=disable
     depends_on:
       - postgres
     entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
     command: ["/app/main"]
+

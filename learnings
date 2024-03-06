@@ -313,3 +313,11 @@ Steps for gateway implementation -
 protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative --grpc-gateway_out=pb --grpc-gateway_opt paths=source_relative \
     --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
     proto/*.proto
+
+
+
+	connect to this docker container postgrs 
+
+	10683796@ltilbom20401298:~/Desktop/EVERYTHING/Learnings/SKILLS_LEARNINGS/banking_management_golang$ docker ps
+CONTAINER ID   IMAGE                COMMAND                  CREATED         STATUS         PORTS                                       NAMES
+bcf7d0fd0459   postgres:12-alpine   "docker-entrypoint.s…"   2 minutes ago   Up 2 minutes   0.0.0.0:5433->5432/tcp, :::5433->5432/tcp   banking_management_golang-postgres-1
